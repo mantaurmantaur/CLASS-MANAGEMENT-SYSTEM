@@ -21,6 +21,7 @@ typedef struct {
 
 
 void front();
+void editClass();
 void mainMenu();
 void addClass();
 void showClass();
@@ -202,7 +203,8 @@ void mainMenu() {
 					exit(0);
 				}
             case 3:
-                // editClassMenu();
+            	 system(CLEAR_SCREEN);
+                 editClass();
                 break;
             case 4:
                 printf("Returning...\n");
@@ -290,5 +292,90 @@ void showClass(){
 	    }
 		fclose(file);
 		
+}
+
+void editClass() {
+    Classes editClass, tempClass;
+    char line[MAX], newCourse[MAX], newSection[MAX];
+    char *token;
+    FILE *file, *tempFile;
+    int choice, lineNum = 0, editChoice;
+    int found = 0;
+
+    showClass();
+
+    file = fopen("classes.csv", "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    printf("\nEnter the number of class to edit: ");
+    scanf("%d", &choice);
+
+    tempFile = fopen("temp.csv", "w");
+    if (tempFile == NULL) {
+        fclose(file);
+        perror("Error creating temporary file");
+        return;
+    }
+
+    while (fgets(line, MAX, file) != NULL) {
+        lineNum++;
+        if (lineNum == choice) {
+            line[strcspn(line, "\n")] = 0;
+            token = strtok(line, ",");
+            if (token != NULL) strcpy(editClass.courses, token);
+            token = strtok(NULL, ",");
+            if (token != NULL) strcpy(editClass.section, token);
+
+            printf("\nEditing: %s - %s\n", editClass.courses, editClass.section);
+            printf("[1] Edit course name\n[2] Edit section\n[3] Edit both\nEnter choice: ");
+            scanf("%d", &editChoice);
+
+            switch(editChoice) {
+                case 1:
+                    printf("Enter new course name: ");
+                    scanf(" %[^\n]", newCourse);
+                    strcpy(editClass.courses, newCourse);
+                    break;
+                case 2:
+                    printf("Enter new section: ");
+                    scanf(" %[^\n]", newSection);
+                    strcpy(editClass.section, newSection);
+                    break;
+                case 3:
+                    printf("Enter new course name: ");
+                    scanf(" %[^\n]", newCourse);
+                    printf("Enter new section: ");
+                    scanf(" %[^\n]", newSection);
+                    strcpy(editClass.courses, newCourse);
+                    strcpy(editClass.section, newSection);
+                    break;
+                default:
+                    printf("Invalid choice. No changes made.\n");
+            }
+
+            fprintf(tempFile, "%s,%s\n", editClass.courses, editClass.section);
+            found = 1;
+        } else {
+            fputs(line, tempFile);
+        }
+    }
+
+    fclose(file);
+    fclose(tempFile);
+
+    if (found) {
+        remove("classes.csv");
+        rename("temp.csv", "classes.csv");
+        printf("Class updated successfully!\n");
+    } else {
+        remove("temp.csv");
+        printf("Class not found.\n");
+    }
+
+    printf("\nPress any key to continue...");
+    getchar(); getchar(); 
 }
 
