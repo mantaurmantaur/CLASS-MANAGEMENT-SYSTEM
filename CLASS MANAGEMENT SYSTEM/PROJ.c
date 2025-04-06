@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <conio.h>
 #define MAX 100
 
 #ifdef _WIN32
@@ -17,14 +18,19 @@ typedef struct {
 typedef struct {
 	char courses[MAX];
 	char section[MAX];
+	char instructor[MAX];
 }Classes;
 
+//global variables
+char currentUser[MAX];
 
+//methods
 void front();
 void editClass();
 void mainMenu();
 void addClass();
 void showClass();
+
 
 int main() {
 	
@@ -84,6 +90,7 @@ void front() {
 	            file = fopen("accounts.csv", "r"); 
 	            if (file == NULL) {
 	                perror("Error opening file");
+	                getch();
 	                return;
 	            }
 	
@@ -100,16 +107,19 @@ void front() {
 	                if (strcmp(compName, Name) == 0 && strcmp(compPass, Password) == 0) {
 	                    printf("Login Successful!\n\n");
 	                    found = 1;
+	                    getch();
 	                    break;
 	                }
 	            }
 	            fclose(file);
 	
 	            if (found) {
+	                strcpy(currentUser, Name);
 	                mainMenu();
 	            } else {
 	                printf("\nInvalid credentials. Please try again.\n");
-	                goto LOGIN;
+	                getch();
+					goto LOGIN;
 	            }
 				}
 	            break;
@@ -142,15 +152,18 @@ void front() {
 		                    FILE *file = fopen("accounts.csv", "a");
 		                    if (file == NULL) {
 		                        perror("Error opening file");
+		                        getch();
 		                        return;
 		                    }
 		                    fprintf(file, "%s,%s\n", Name, firstPass);
 		                    fclose(file);
 		                    printf("Account created successfully! Please log in.\n");
+		                    getch();
 		                    goto LOGIN;
 		                    break;
 		                } else {
 		                    printf("Passwords do not match! Try again.\n\n");
+		                    getch();
 		                    goto PASS;
 		                }
 		            }while(strcmp(firstPass, conPass)==0);
@@ -161,6 +174,7 @@ void front() {
             	exit(0);
             default: 
 				printf("Choice out of bounds, try again!\n");
+				getch();
 		}
     }while(frChoice!=3);
 }
@@ -208,11 +222,13 @@ void mainMenu() {
                 break;
             case 4:
                 printf("Returning...\n");
+                getch();
                 system(CLEAR_SCREEN);
                 return;
                 
             default:
                 printf("Choice out of bounds, please try again.\n");
+                getch();
         }
     } while (choice != 4);
 }
@@ -245,11 +261,13 @@ void addClass(){
     FILE *file = fopen("classes.csv", "a");
 		if (file == NULL) {
 		    perror("Error opening file");
+		     getch();
 		    return;
 		}
-	fprintf(file, "%s,%s\n", addClass.courses, addClass.section);
+	fprintf(file, "%s,%s,%s\n", addClass.courses, addClass.section, currentUser);
 	fclose(file);
 	printf("Class added succesfully!\n\n");
+	 getch();
 	}	
 }
 
@@ -273,24 +291,34 @@ void showClass(){
 	file = fopen("classes.csv", "r"); 
 	    if (file == NULL) {
 	        perror("Error opening file");
+	         getch();
 	        return;
 	    }
 	
 	    int found = 0;
-	    printf("\n\n\n");
-	    while (fgets(line, MAX, file) != NULL) {
-	    found++;
-	    line[strcspn(line, "\n")] = 0;
-	
-	    token = strtok(line, ","); // Initialize token
+		printf("\n\n\n");
+
+// Skip the header line
+		fgets(line, MAX, file);
+
+		while (fgets(line, MAX, file) != NULL) {
+    	line[strcspn(line, "\n")] = 0;
+
+	    token = strtok(line, ",");
 	    if (token != NULL) strcpy(showClass.courses, token); 
-	                
+	
 	    token = strtok(NULL, ",");
 	    if (token != NULL) strcpy(showClass.section, token);
-	    
-	    printf("\t[%d] %s \t%s \n", found, showClass.courses, showClass.section);
+	
+	    token = strtok(NULL, ",");
+	    if (token != NULL) strcpy(showClass.instructor, token);
+	
+	    if (strcmp(showClass.instructor, currentUser) == 0) {
+	        found++;
+	        printf("\t[%d] %s \t%s\n", found, showClass.courses, showClass.section);
 	    }
-		fclose(file);
+}
+fclose(file);
 		
 }
 
@@ -298,71 +326,120 @@ void editClass() {
     Classes editClass, tempClass;
     char line[MAX], newCourse[MAX], newSection[MAX];
     char *token;
-    FILE *file, *tempFile;
+    FILE *tempFile;
     int choice, lineNum = 0, editChoice;
     int found = 0;
+    char Continue[MAX];
+	int matchingLines[MAX]; // holds line numbers in the file for filtered classes
+	int totalMatches = 0; //i track ang actual number didto sa csv then gamiton for comparing sa choice ug ang actual number niya sa csv file
+	    
+	
+	FILE *file = fopen("classes.csv", "r");
+	
+	if (file == NULL) {
+	    perror("Error opening file");
+	    return;
+	}
 
-    showClass();
+	// i-Skip ang header
+	fgets(line, MAX, file);
+	
+	int lineCount = 1;
+	showClass();//i show ang classes dri
+	
+	while (fgets(line, MAX, file) != NULL) {//ang kani nga loop is to track ang tinuod nga number niya sa csv
+	    lineCount++;
+	    line[strcspn(line, "\n")] = 0;
+	    token = strtok(line, ",");
+	    if (token != NULL) strcpy(tempClass.courses, token);
+	    token = strtok(NULL, ",");
+	    if (token != NULL) strcpy(tempClass.section, token);
+	    token = strtok(NULL, ",");
+	    if (token != NULL) strcpy(tempClass.instructor, token);
+	
+	    if (strcmp(tempClass.instructor, currentUser) == 0) {
+	        totalMatches++;
+	        matchingLines[totalMatches] = lineCount;
+	    }
+	}
+	fclose(file);
+	
+	
+	printf("\n\nTotal matches: %d\n\n", totalMatches);
+	
+	if (totalMatches == 0) {
+	    printf("No classes found for user.\n");
+	    return;
+	}
 
     file = fopen("classes.csv", "r");
     if (file == NULL) {
         perror("Error opening file");
         return;
     }
+	
+	Editing:
+	printf("\nEnter the number of class to edit: ");
+	scanf("%d", &choice);
+	
+	if (choice < 1 || choice > totalMatches) {
+	    printf("Invalid selection.\n");
+	    getch();
+	    goto Editing;
+	}
+	
+	int targetLine = matchingLines[choice];
 
-    printf("\nEnter the number of class to edit: ");
-    scanf("%d", &choice);
+    file = fopen("classes.csv", "r");
+	tempFile = fopen("temp.csv", "w");
+	lineNum = 0;
+	
+	while (fgets(line, MAX, file) != NULL) {
+    lineNum++;
+    line[strcspn(line, "\n")] = 0;
+    char tempLine[MAX];
+    strcpy(tempLine, line);
 
-    tempFile = fopen("temp.csv", "w");
-    if (tempFile == NULL) {
-        fclose(file);
-        perror("Error creating temporary file");
-        return;
-    }
+    token = strtok(line, ",");
+    if (token != NULL) strcpy(editClass.courses, token);
+    token = strtok(NULL, ",");
+    if (token != NULL) strcpy(editClass.section, token);
+    token = strtok(NULL, ",");
+    if (token != NULL) strcpy(editClass.instructor, token);
+    else strcpy(editClass.instructor, "");
 
-    while (fgets(line, MAX, file) != NULL) {
-        lineNum++;
-        if (lineNum == choice) {
-            line[strcspn(line, "\n")] = 0;
-            token = strtok(line, ",");
-            if (token != NULL) strcpy(editClass.courses, token);
-            token = strtok(NULL, ",");
-            if (token != NULL) strcpy(editClass.section, token);
+    if (lineNum == targetLine) {
+        // Do the editing here
+        printf("\nEditing: %s - %s\n", editClass.courses, editClass.section);
+        printf("[1] Edit course name\n[2] Edit section\n[3] Edit both\nEnter choice: ");
+        scanf("%d", &editChoice);
 
-            printf("\nEditing: %s - %s\n", editClass.courses, editClass.section);
-            printf("[1] Edit course name\n[2] Edit section\n[3] Edit both\nEnter choice: ");
-            scanf("%d", &editChoice);
-
-            switch(editChoice) {
-                case 1:
-                    printf("Enter new course name: ");
-                    scanf(" %[^\n]", newCourse);
-                    strcpy(editClass.courses, newCourse);
-                    break;
-                case 2:
-                    printf("Enter new section: ");
-                    scanf(" %[^\n]", newSection);
-                    strcpy(editClass.section, newSection);
-                    break;
-                case 3:
-                    printf("Enter new course name: ");
-                    scanf(" %[^\n]", newCourse);
-                    printf("Enter new section: ");
-                    scanf(" %[^\n]", newSection);
-                    strcpy(editClass.courses, newCourse);
-                    strcpy(editClass.section, newSection);
-                    break;
-                default:
-                    printf("Invalid choice. No changes made.\n");
-            }
-
-            fprintf(tempFile, "%s,%s\n", editClass.courses, editClass.section);
-            found = 1;
-        } else {
-            fputs(line, tempFile);
+        switch (editChoice) {
+            case 1:
+                printf("Enter new course name: ");
+                scanf(" %[^\n]", editClass.courses);
+                break;
+            case 2:
+                printf("Enter new section: ");
+                scanf(" %[^\n]", editClass.section);
+                break;
+            case 3:
+                printf("Enter new course name: ");
+                scanf(" %[^\n]", editClass.courses);
+                printf("Enter new section: ");
+                scanf(" %[^\n]", editClass.section);
+                break;
+            default:
+                printf("Invalid choice. Skipping edit.\n");
         }
-    }
 
+        fprintf(tempFile, "%s,%s,%s\n", editClass.courses, editClass.section, editClass.instructor);
+        found = 1;
+	} else {
+	        fprintf(tempFile, "%s\n", tempLine);
+	    }
+	}
+    
     fclose(file);
     fclose(tempFile);
 
@@ -372,10 +449,17 @@ void editClass() {
         printf("Class updated successfully!\n");
     } else {
         remove("temp.csv");
-        printf("Class not found.\n");
+        printf("Class not found.\n Continue?: ");
+        fgets(Continue, sizeof(Continue), stdin);
+        
+        for (int i = 0; Continue[i] != '\0'; i++) {//lowercase all inputs
+       		Continue[i] = tolower(Continue[i]);
+   }
+        if(Continue == "yes" || Continue == "y"){
+        	goto Editing;
+		}
     }
 
     printf("\nPress any key to continue...");
     getchar(); getchar(); 
 }
-
