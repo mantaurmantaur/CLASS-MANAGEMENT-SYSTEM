@@ -337,7 +337,8 @@ void showClass(int indicator){
 
 // Skip the header line
 	fgets(line, MAX, file);
-	printf("\tCourse Name\t\t Subject Code\t Section\n");
+	printf(" %-5s %-20s %-15s %-10s\n", "No.", "Course Name", "Subject Code", "Section");
+	printf("---------------------------------------------------------------\n");
 		while (fgets(line, MAX, file) != NULL) {
 	    	line[strcspn(line, "\n")] = 0;
 	
@@ -355,9 +356,10 @@ void showClass(int indicator){
 		
 		    if (strcmp(showClass.instructor, currentUser) == 0) {
 		        found++;
-		        printf("\t[%d] %s \t %s \t\t %s\n", found, showClass.courseName, showClass.courseCode, showClass.section);
+		        printf(" [%d]   %-20s %-15s %-10s\n", found, showClass.courseName, showClass.courseCode, showClass.section);
 		    }
 		}
+	printf("---------------------------------------------------------------\n");	
 	fclose(file);
 	
 	if(indicator == 1 || indicator == 3){
