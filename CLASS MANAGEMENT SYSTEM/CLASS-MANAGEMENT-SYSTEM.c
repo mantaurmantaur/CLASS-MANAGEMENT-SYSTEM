@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,7 @@ typedef struct {
 char currentUser[MAX];
 int choice;
 
+
 //methods
 void front();
 void editClass();
@@ -34,6 +36,9 @@ void addClass();
 void showClass();
 void openClass();
 void getPassword();
+void showArt(FILE *fptr);
+
+
 
 
 int main() {
@@ -41,6 +46,17 @@ int main() {
 	front();
 	
 	return 0;
+}
+
+void showArt(FILE *fptr){
+	    if (fptr == NULL) {  
+	        return;
+	    }
+	    char ch;
+	    while ((ch = fgetc(fptr)) != EOF) {
+	        putchar(ch);
+	    }
+	    fclose(fptr);
 }
 
 void front() {
@@ -54,17 +70,10 @@ void front() {
     
     do {
     	system(CLEAR_SCREEN);
-	    FILE *fptr = fopen("menuArt.txt", "r");  
-	
-	    if (fptr == NULL) {  
-	        return;
-	    }
-	    char ch;
-	    while ((ch = fgetc(fptr)) != EOF) {
-	        putchar(ch);
-	    }
-	    fclose(fptr);  
 	    
+	   FILE *fptr = fopen("menuArt.txt" , "r");  
+	   showArt(fptr);
+	   
 	        printf("Select operation:\n");
 	        printf("[1] LOG-IN\n[2] SIGN UP\n[3] EXIT\n\n");
 	        printf("Enter choice: ");
@@ -75,16 +84,8 @@ void front() {
 	        		{
 	        		LOGIN:
 	        		system(CLEAR_SCREEN);
-	        		 FILE *fptr = fopen("logInart.txt", "r");  
-	
-	    			if (fptr == NULL) {  
-	        		return;
-	    			}
-	    			char ch;
-	    			while ((ch = fgetc(fptr)) != EOF) {
-	        		putchar(ch);
-	    			}
-	    			fclose(fptr);
+	        		  FILE *fptr = fopen("loginArt.txt" , "r");  
+	   				showArt(fptr);
 	    			
 	    			printf("\n\n\nEnter name: ");
 		            scanf(" %[^\n]", Name); 
@@ -133,15 +134,7 @@ void front() {
 		        		
 		        		system(CLEAR_SCREEN);
 	        		 FILE *fptr = fopen("signUpArt.txt ", "r");  
-	
-	    			if (fptr == NULL) {  
-	        		return;
-	    			}
-	    			char ch;
-	    			while ((ch = fgetc(fptr)) != EOF) {
-	        		putchar(ch);
-	    			}
-	    			fclose(fptr);
+		   			showArt(fptr);
 	    			
 		        		printf("\n\n\nEnter name: ");
 			            scanf(" %[^\n]", Name);
@@ -212,16 +205,9 @@ void mainMenu() {
    
     do {
     	system(CLEAR_SCREEN);
-    FILE *fptr = fopen("menuArt.txt", "r");  
-
-    if (fptr == NULL) {  
-        return;
-    }
-    char ch;
-    while ((ch = fgetc(fptr)) != EOF) {
-        putchar(ch);
-    }
-    fclose(fptr);  
+    	
+      FILE *fptr = fopen("menuArt.txt" , "r");  
+	   showArt(fptr); 
 
         printf("\n[1] Add Classes\n[2] Show Classes\n[3] Edit Classes\n[4] Log Out\n");
         printf("\nEnter choice: ");
@@ -259,15 +245,7 @@ void addClass(){
 	Classes addClass;
 	
     FILE *fptr = fopen("addClass.txt", "r");  
-
-    if (fptr == NULL) {  
-        return;
-    }
-    char ch;
-    while ((ch = fgetc(fptr)) != EOF) {
-        putchar(ch);
-    }
-    fclose(fptr);  
+	showArt(fptr); 
     
     printf("\t\tCurrent Classes");
     showClass(3);
@@ -314,15 +292,7 @@ void showClass(int indicator){
     if(indicator == 3)
     	goto showClasses;
     FILE *fptr = fopen("showClassArt.txt", "r");  
-
-    if (fptr == NULL) {  
-        return;
-    }
-    char ch;
-    while ((ch = fgetc(fptr)) != EOF) {
-        putchar(ch);
-    }
-    fclose(fptr);
+	   showArt(fptr);
 	
 	showClasses:
 	file = fopen("classes.csv", "r"); 
