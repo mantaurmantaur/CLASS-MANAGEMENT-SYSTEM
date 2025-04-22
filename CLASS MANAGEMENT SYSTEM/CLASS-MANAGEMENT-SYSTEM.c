@@ -23,6 +23,15 @@ typedef struct {
 	char instructor[MAX];
 }Classes;
 
+typedef struct student
+{
+    int roll_no;
+    char name[100];
+    float marks;
+    struct student *next;
+}node;
+node *create_list();
+
 //global variables
 char currentUser[MAX];
 int choice;
@@ -37,9 +46,6 @@ void showClass();
 void openClass();
 void getPassword();
 void showArt(FILE *fptr);
-
-
-
 
 int main() {
 	
@@ -350,6 +356,11 @@ void showClass(int indicator){
 
 void openClass(){
 	//need pa code, hihi
+	
+	//test
+	create_list();
+	
+	
 }
 
 void editClass() {
@@ -505,4 +516,53 @@ void editClass() {
     	return;
 }
 
+node *create_list()
+{
+    int roll, flag = 1;
+    float marks;
+    char Name[100];
+    char ans = 'y';
+    node *tem,*new,*start;
+    node *getnode();
+    tem = NULL;
+    do
+    {
+        printf("Enter ID number: ");
+        scanf("%d",&roll);
+        printf("Enter student name: ");
+        _flushall();
+        gets(Name);
+        printf("Enter the marks : ");
+        scanf("%d",&marks);
+        new = getnode();
+        if(new == NULL)
+        printf("\nMemory is not allocated : ");
+        new->roll_no=roll;
+        strcpy(new->name,Name);
+        new->marks=marks;
+        if(flag==1)
+        {
+            start=new;
+            tem=start;
+            flag=0;
+        }
+        else
+        {
+            tem->next=new;
+            tem=new;
+        }
+    printf("\nDo you want to enter more elements(y/n) : ");
+    ans=getche();
+    } while (ans=='y');
+    printf("\nThe single linked list is created\n");
+    return start;
+}
+
+node *getnode()
+{
+    node *temp;
+    temp=(node*)malloc(sizeof(node));
+    temp->next=NULL;
+    return temp;
+}
        
