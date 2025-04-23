@@ -40,7 +40,6 @@ int choice;
 
 //methods
 void front();
-void addStudent();
 void editClass();
 void mainMenu();
 void addClass();
@@ -90,6 +89,33 @@ list_t *list_from_csv(list_t *list, FILE *fp)
         }
     }
     return list;
+}
+
+void search(list_t* list, char s[]){
+    StudentDetails *current = list->head;
+    while (current){
+        if(strcmp(current->FirstName, s)){
+            printf("'%s' Found.\n\n", s);
+            printf("Student Details: \n\n");
+
+            if (current && strcmp(current->FirstName, "FirstName") == 0 && strcmp(current->LastName, "LastName") == 0) {
+            current = current->next;
+            }
+			
+			
+            printf(" %-5s %-20s %-15s\n", "No.", "First Name", "Last Name");
+            printf("---------------------------------------------------------------\n");
+        	printf("      %-25s %-15s\n", current->FirstName, current->LastName);
+            printf("---------------------------------------------------------------\n");
+
+            break;
+        }
+        else if(current == NULL){
+                printf("%s NOT Found.", current->FirstName);
+        }
+
+        current = current->next;
+    }
 }
 
 void prn_list(list_t *list) {
@@ -548,39 +574,12 @@ void openClass() {
     fclose(studentFile);
     system(CLEAR_SCREEN);
     prn_list(&list);
+    char s[20];
+    printf("Enter First Name of Student: ");
+    scanf(" %s", &s);
+    search(&list, s);
+    
 //    del_list(&list);
-
-	printf("\n\nDo you want:\n\t[1] Add Student\t[2] Delete Student\t[3] Search Student\t[4] Input Attendance\t[5] Back\n\nEnter choice: ");
-	scanf("%d", &choice);
-	
-	switch(choice){
-		case 1:{
-			addStudent(filePath);
-			break;
-		}
-		case 2:{
-			deleteStudent(filePath);
-			break;
-		}
-		case 3:{
-			
-			break;
-		}
-		case 4:{
-			
-			break;
-		}
-		case 5:{
-			mainMenu();
-			system(CLEAR_SCREEN);
-			prn_list(&list);
-			break;
-		}
-		default:
-			printf("Enter a valid choice.");
-	}
-	
-	del_list(&list);
     getch();
 }
 
@@ -738,45 +737,5 @@ void editClass() {
 }
 
 void addFile(){
-}
-
-void addStudent(char filePath[MAX]){
-	
-	int numClass, i, choice;
-	StudentDetails addStud;
-	
-//    FILE *fptr = fopen("addClass.txt", "r");  //art
-
-    Adding:
-    printf("\n\nEnter number of students to add: ");
-    scanf("%d", &numClass);
-    
-    for (i = 0; i < numClass; i++){
-    	printf("\nEnter First Name: ");
-    	scanf(" %[^\n]", addStud.FirstName);
-    	printf("Enter Last Name: ");
-    	scanf(" %[^\n]", addStud.LastName);
-    	
-	    FILE *file = fopen(filePath, "a");
-			if (file == NULL) {
-			    perror("Error opening file");-
-			     getch();
-			    return;
-			}
-		fprintf(file, "%s,%s\n", addStud.FirstName,addStud.LastName);
-		fclose(file);
-		printf("\nStudent(s) added succesfully!\n\n");
-	}
-	
-	printf("Add more? \n[1] Yes\n[2] No\nEnter choice: ");
-	scanf("%d", &choice);
-	if(choice == 1)
-	{
-		goto Adding;
-	}	
-	else
-		mainMenu();
-		
-	getch();
 }
                
