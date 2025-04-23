@@ -377,77 +377,68 @@ void addClass(){//let's try nga maka add ug filepath
 }
 
 void showClass(int indicator){
-	Classes showClass;
-	char line[MAX];
+    Classes showClass;
+    char line[MAX];
     char *token;
     FILE *file;
-    char *fields[5];
-	int i = 0;    
-    
+
     if(indicator == 3)
-    	goto showClasses;
-    FILE *fptr = fopen("showClassArt.txt", "r");  
-    if (fptr == NULL) {  
-        return;
-    }
-    char ch;
-    while ((ch = fgetc(fptr)) != EOF) {
-        putchar(ch);
-    }
-    fclose(fptr);
-	
-	showClasses:
-	file = fopen("classes.csv", "r"); 
-	    if (file == NULL) {
-	        perror("Error opening file");
-	         getch();
-	        return;
-	    }
-	
-	    int found = 0;
-		printf("\n\n\n");
+        goto showClasses;
+//    FILE *fptr = fopen("showClassArt.txt", "r");
+//       showArt(fptr);
+
+    showClasses:
+    file = fopen("classes.csv", "r"); 
+        if (file == NULL) {
+            perror("Error opening file");
+             getch();
+            return;
+        }
+
+        int found = 0;
+        printf("\n\n\n");
 
 // Skip the header line
-	fgets(line, MAX, file);
-	printf(" %-5s %-20s %-15s %-10s\n", "No.", "Course Name", "Subject Code", "Section");
-	printf("---------------------------------------------------------------\n");
-	while (fgets(line, MAX, file) != NULL) {
-	    i=0;//index to store tokens
-		token = strtok(line, ",");
-		while (token != NULL && i < 5) {//i++, hangtod 4 then after 
-		    fields[i++] = token;
-		    token = strtok(NULL, ",");
-		}
-		
-		if (i >= 4) { //i check if ang fields nga nabasa is 4 or up
-		    strcpy(showClass.courseName, fields[0]);
-		    strcpy(showClass.courseCode, fields[1]);
-		    strcpy(showClass.section, fields[2]);
-		    strcpy(showClass.instructor, fields[3]);
-		
-		    if (strcmp(showClass.instructor, currentUser) == 0) {
-		        found++;
-		        printf(" [%d]   %-20s %-15s %-10s\n", found, showClass.courseName, showClass.courseCode, showClass.section);
-		    }
-		}
-	}
-	printf("---------------------------------------------------------------\n");	
-	fclose(file);
-	
-	if(indicator == 1 || indicator == 3){
-		return;
-	}
-	else{
-		printf("\n\n[1] Open a class\t [2] Back\n");
-		printf("Enter choice: ");
-		scanf("%d", &choice);
-		
-		if(choice==1){
-			openClass();
-		}
-		else
-			return;
-	}
+    fgets(line, MAX, file);
+    printf(" %-5s %-20s %-15s %-10s\n", "No.", "Course Name", "Subject Code", "Section");
+    printf("---------------------------------------------------------------\n");
+        while (fgets(line, MAX, file) != NULL) {
+            line[strcspn(line, "\n")] = 0;
+
+            token = strtok(line, ",");
+            if (token != NULL) strcpy(showClass.courseName, token); 
+
+            token = strtok(NULL, ",");
+            if (token != NULL) strcpy(showClass.courseCode, token); 
+
+            token = strtok(NULL, ",");
+            if (token != NULL) strcpy(showClass.section, token);
+
+            token = strtok(NULL, ",");
+            if (token != NULL) strcpy(showClass.instructor, token);
+
+            if (strcmp(showClass.instructor, currentUser) == 0) {
+                found++;
+                printf(" [%d]   %-20s %-15s %-10s\n", found, showClass.courseName, showClass.courseCode, showClass.section);
+            }
+        }
+    printf("---------------------------------------------------------------\n");
+    fclose(file);
+
+    if(indicator == 1 || indicator == 3){
+        return;
+    }
+    else{
+        printf("\n\n[1] Open a class\t [2] Back\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        if(choice==1){
+            openClass();
+        }
+        else
+            return;
+    }
 }
 
 void openClass() {
