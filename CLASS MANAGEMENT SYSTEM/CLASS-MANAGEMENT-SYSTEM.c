@@ -48,6 +48,7 @@ void showClass();
 void openClass();
 void getPassword();
 void addFile();
+void del_list (list_t *l);
 
 int main() {
 	
@@ -90,6 +91,17 @@ list_t *list_from_csv(list_t *list, FILE *fp)
         }
     }
     return list;
+}
+
+void del_list (list_t *l)
+{
+    StudentDetails *n = l->head;
+
+    while (n) {
+        StudentDetails *victim = n;
+        n = n->next;
+        free (victim);
+    }
 }
 
 void prn_list(list_t *list) {
