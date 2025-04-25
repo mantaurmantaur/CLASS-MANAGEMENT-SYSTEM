@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
+#include <stdbool.h>
 #define MAX 1024
 
 #ifdef _WIN32
@@ -14,6 +15,7 @@ typedef struct {
     char name[MAX];
     char pass[MAX];
 } logInCredentials;
+
 
 typedef struct {
 	char courseName[MAX];
@@ -30,8 +32,10 @@ typedef struct StudentDetails{
 	struct StudentDetails *next;
 }StudentDetails;
 
+
+
 typedef struct{
-	StudentDetails *head, *tail;
+	StudentDetails *head, *tail, *next;
 }list_t;
 
 //global variables
@@ -41,6 +45,10 @@ int choice;
 //methods
 void front();
 void addStudent();
+void searchStudent(list_t* list, char s[]);
+void deleteStudent(char filePath[], list_t*);
+void freeMemory(list_t*);
+//void del_list(list_t*);
 void editClass();
 void mainMenu();
 void addClass();
@@ -48,7 +56,6 @@ void showClass();
 void openClass();
 void getPassword();
 void addFile();
-void del_list (list_t *l);
 
 int main() {
 	
@@ -91,17 +98,6 @@ list_t *list_from_csv(list_t *list, FILE *fp)
         }
     }
     return list;
-}
-
-void del_list (list_t *l)
-{
-    StudentDetails *n = l->head;
-
-    while (n) {
-        StudentDetails *victim = n;
-        n = n->next;
-        free (victim);
-    }
 }
 
 void prn_list(list_t *list) {
@@ -458,6 +454,7 @@ void openClass() {
     Classes editClass, tempClass;
     char line[MAX], filePath[MAX];
     char *token;
+    char s[20];
     FILE *file = fopen("classes.csv", "r");
     FILE *tempFile;
     int lineCount = 1, matchingLines[MAX], totalMatches = 0;
@@ -560,24 +557,39 @@ void openClass() {
     fclose(studentFile);
     system(CLEAR_SCREEN);
     prn_list(&list);
-//    del_list(&list);
 
-	printf("\n\nDo you want:\n\t[1] Add Student\t[2] Delete Student\t[3] Search Student\t[4] Input Attendance\t[5] Back\n\nEnter choice: ");
+	printf("\n\nDo you want to:\n\t[1] Add Student  \t[2] Edit Student\t[3] Search Student\t[4] Input Attendance\t[5] Back\n\nEnter choice: ");
 	scanf("%d", &choice);
 	
+
 	switch(choice){
 		case 1:{
-			addStudent(filePath);
+			addStudent(filePath, &list);
 			break;
 		}
 		case 2:{
-			deleteStudent(filePath);
+//			deleteStudent(filePath, &list);
 			break;
 		}
 		case 3:{
-			
-			break;
+		Searching:
+		    printf("\nEnter Student's Last name: ");
+		    scanf(" %s", &s);
+			searchStudent(&list, s);
+		
+		//ask to continue
+		printf("\n\nContinue searching? \n[1] Yes\n[2] No\nEnter choice: ");
+		scanf("%d", &choice);
+		if(choice == 1)
+		{
+			goto Searching;
+		}	
+		else
+//			freeMemory(&list);
+			mainMenu();
 		}
+			break;
+		
 		case 4:{
 			
 			break;
@@ -592,7 +604,7 @@ void openClass() {
 			printf("Enter a valid choice.");
 	}
 	
-	del_list(&list);
+//	del_list(&list);
     getch();
 }
 
@@ -657,7 +669,7 @@ void editClass() {
     }
 	
 	Editing:
-	printf("\nEnter the number of class to edit: ");
+	printf("\nEnter class index to edit (type '0' to return): ");
 	scanf("%d", &choice);
 	
 	 tempFile = fopen("temp.csv", "w");
@@ -667,11 +679,15 @@ void editClass() {
         return;
     }
 	
-	if (choice < 1 || choice > totalMatches) {
-	    printf("Invalid selection.\n");
+	if (choice < 1 || choice > totalMatches || choice == 0) {
+		if(choice  == 0){
+		mainMenu();
+		}
+		printf("Invalid selection.\n");
 	    getch();
-	    goto Editing;
+	    goto Editing;  
 	}
+
 	
 	
 	lineNum = 0;
@@ -791,4 +807,128 @@ void addStudent(char filePath[MAX]){
 		
 	getch();
 }
-               
+
+void searchStudent(list_t* list, char s[]){
+    StudentDetails *current = list->head;
+    while (current != NULL){
+        if(strcmp(current->LastName, s) == 0){
+            printf("'%s' Found.\n\n", s);
+            printf("Student Details: \n\n");
+
+            if (current && strcmp(current->FirstName, "FirstName") == 0 && strcmp(current->LastName, "LastName") == 0) {
+            current = current->next;
+            }
+			
+			
+            printf(" %-5s %-20s %-15s\n", "No.", "First Name", "Last Name");
+            printf("---------------------------------------------------------------\n");
+        	printf("      %-25s %-15s\n", current->FirstName, current->LastName);
+            printf("---------------------------------------------------------------\n");
+          	break;
+        }
+        current = current->next;	 
+    }
+    if(current == NULL){
+            printf("%s NOT Found.", s);
+        	}
+}    
+
+void freeMemory(list_t* list){
+	StudentDetails* current = list->head;
+	while (current != NULL) {
+	    StudentDetails* temp = current;
+	    current = current->next;
+	    free(temp->LastName);
+	    free(temp);
+	}
+	list->head = NULL;
+}
+
+void deleteStudent(char filePath[], list_t *list) {
+    FILE *file, *temp_file;
+    char line[MAX];
+    char tempPath[MAX];  
+    int studDelete;
+    int current_row = 0, choice;
+    
+Deleting:
+    printf("\nEnter student to delete (number): ");
+    scanf("%d", &studDelete);
+
+    file = fopen(filePath, "r");
+    if (file == NULL) {
+        perror("Error opening file for reading");
+        return;
+    }
+
+    char *lastSlash = strrchr(filePath, '\\');
+    if (lastSlash) {
+        size_t dirLen = lastSlash - filePath + 1;
+        strncpy(tempPath, filePath, dirLen);
+        tempPath[dirLen] = '\0'; 
+        strcat(tempPath, "temp.csv"); 
+    } else {
+        strcpy(tempPath, "temp.csv");
+    }
+
+    temp_file = fopen(tempPath, "w");
+    if (temp_file == NULL) {
+        perror("Error opening temporary file for writing");
+        fclose(file);
+        return;
+    }
+
+    while (fgets(line, MAX, file) != NULL) {
+        if (current_row != studDelete) {
+            fputs(line, temp_file);
+        }
+        current_row++;
+    }
+
+    fclose(file);
+    fclose(temp_file);
+
+    if (remove(filePath) == 0) {
+        if (rename(tempPath, filePath) != 0) {
+            perror("Error renaming temporary file");
+            return;
+        }
+    } else {
+        perror("Error deleting original file");
+        return;
+    }
+
+    printf("\nStudent %d deleted successfully.\n", studDelete);
+    system(CLEAR_SCREEN);
+    
+    FILE *studentFile = fopen(filePath, "r");
+    if (!studentFile) {
+        perror("Error opening class student file");
+        getch();
+        return;
+    }
+
+    list->head = NULL;
+list->tail = NULL;
+    if (!list_from_csv(list, studentFile)) {
+        fclose(studentFile);
+        return;
+    }
+    
+fclose(studentFile);
+    
+    printf("\nUpdated List:\n");
+    prn_list(list);
+    
+    
+//    del_list(list);
+
+    printf("\n\nDelete more? \n[1] Yes\n[2] No\nEnter choice: ");
+    scanf("%d", &choice);
+    if (choice == 1) {
+        goto Deleting;
+    } else {
+        return;
+    }
+    getch();
+}
