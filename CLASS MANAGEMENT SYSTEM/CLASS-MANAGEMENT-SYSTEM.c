@@ -52,6 +52,7 @@ void searchStudent(list_t* list, char s[]);
 void deleteStudent(char filePath[], list_t*);
 void freeMemory(list_t*);
 void editStudent(char filePath[], list_t*);
+void bubble_sort_linked_list(list_t* list);
 void editClass();
 void mainMenu();
 void addClass();
@@ -70,25 +71,53 @@ int main() {
 	return 0;
 }
 
-StudentDetails *add (list_t *l, StudentDetails *data)
-{
-    StudentDetails *node = malloc (sizeof *node);   /* allocate node */
-    if (!node) {                            /* validate allocation */
-        perror ("malloc-node");
+StudentDetails *add(list_t *l, StudentDetails *data){
+    StudentDetails *node = malloc(sizeof *node);   /* allocate node */
+    
+    if (!node) {					/* validate allocation */
+        perror("malloc-node");
         return NULL;
     }
 
-    *node = *data;                      /* initialize members values */
-	node->next = NULL;
-	
-    if (!l->head)                       /* if 1st node, node is head/tail */
-        l->head = l->tail = node;
-    else {                              /* otherwise */
-        l->tail->next = node;           /* add at end, update tail pointer */
+    // para ma tarong ug link ang mga field, i copy siya
+    strcpy(node->studentNumber, data->studentNumber);
+    strcpy(node->FirstName, data->FirstName);
+    strcpy(node->LastName, data->LastName);
+    node->next = NULL;  
+
+    if (!l->head)						/* if 1st node, node is head/tail */
+        l->head = l->tail = node;		
+    else {								/* otherwise */
+        l->tail->next = node;			/* add at end, update tail pointer */
         l->tail = node;
     }
 
-    return node;    /* return new node */
+    return node;
+}
+
+//StudentDetails *add (list_t *l, StudentDetails *data)
+//{
+//    StudentDetails *node = malloc (sizeof *node);   /* allocate node */
+//    if (!node) {                            /* validate allocation */
+//        perror ("malloc-node");
+//        return NULL;
+//    }
+//
+//    *node = *data;                      /* initialize members values */
+//	node->next = NULL;
+//	
+//    if (!l->head)                       /* if 1st node, node is head/tail */
+//        l->head = l->tail = node;
+//    else {                              /* otherwise */
+//        l->tail->next = node;           /* add at end, update tail pointer */
+//        l->tail = node;
+//    }
+//
+//    return node;    /* return new node */
+//}
+
+void trim_newline(char *str) {
+    str[strcspn(str, "\r\n")] = 0;
 }
 
 list_t *list_from_csv(list_t *list, FILE *fp)
@@ -99,10 +128,12 @@ list_t *list_from_csv(list_t *list, FILE *fp)
 	fgets(buf, MAX, fp);
     while (fgets(buf, MAX, fp)) {
        if (sscanf(buf, "%63[^,],%63[^,],%63[^\n]", data.studentNumber, data.FirstName, data.LastName) == 3) {
+       		trim_newline(data.LastName);
 		    if (!add(list, &data)) 
 		        break;
 		}
     }
+    
     return list;
 }
 
@@ -741,6 +772,7 @@ void openClass() {
 			}
 			case 6:{
 //				sort(filePath);
+				bubble_sort_linked_list(&list);
 			}
 			case 7:{
 				
@@ -1008,6 +1040,7 @@ void addStudent(char filePath[MAX]){
 	getch();
 }
 
+
 void editStudent(char filePath[MAX], list_t* list){
     FILE *file, *temp_file;
     StudentDetails editStud, editTemp;
@@ -1033,6 +1066,8 @@ openEdit:
         lineCount++;
         line[strcspn(line, "\n")] = 0;
         token = strtok(line, ",");
+        if (token != NULL) strcpy(editTemp.studentNumber, token);
+        token = strtok(NULL, ",");
         if (token != NULL) strcpy(editTemp.FirstName, token);
         token = strtok(NULL, ",");
         if (token != NULL) strcpy(editTemp.LastName, token);
@@ -1291,6 +1326,56 @@ void deleteStudent(char filePath[], list_t *list) {
     }
     getch();
 }
+
+void swap_nodes(StudentDetails *a, StudentDetails *b) {
+    char tempStudentNumber[MAX];
+    char tempFirstName[MAX];
+    char tempLastName[MAX];
+
+    strcpy(tempStudentNumber, a->studentNumber);
+    strcpy(tempFirstName, a->FirstName);
+    strcpy(tempLastName, a->LastName);
+
+    strcpy(a->studentNumber, b->studentNumber);
+    strcpy(a->FirstName, b->FirstName);
+    strcpy(a->LastName, b->LastName);
+ 
+    strcpy(b->studentNumber, tempStudentNumber);
+    strcpy(b->FirstName, tempFirstName);
+    strcpy(b->LastName, tempLastName);
+}
+
+// Function to perform bubble sort on the linked list
+void bubble_sort_linked_list(list_t* list) {
+  if (!list || !list->head || !list->head->next) return;
+
+    int swapped;
+    StudentDetails *ptr;
+    StudentDetails *lptr = NULL;
+
+    do {
+        swapped = 0;
+        ptr = list->head;
+
+        while (ptr->next != lptr) {
+            if (strcmp(ptr->LastName, ptr->next->LastName) > 0 ||
+                (strcmp(ptr->LastName, ptr->next->LastName) == 0 &&
+                 strcmp(ptr->FirstName, ptr->next->FirstName) > 0)) {
+                swap_nodes(ptr, ptr->next);
+                swapped = 1;
+            }
+            ptr = ptr->next;
+        }
+        lptr = ptr;
+    } while (swapped);
+    
+
+    prn_list(list);
+    del_list(list);
+    getch();
+}
+
+
 
 //void sort(char filePath[]){
 //	FILE *fp;
