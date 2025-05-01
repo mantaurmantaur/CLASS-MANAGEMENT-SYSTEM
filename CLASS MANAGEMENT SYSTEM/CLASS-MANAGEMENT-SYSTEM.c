@@ -758,205 +758,171 @@ void openClass() {
     getch();
 }
 
-void editClass() {
-    Classes editClass, tempClass;
-    char line[MAX], dec[MAX], Continue[MAX];
+void editStudent(char filePath[MAX], list_t* list){
+    FILE *file, *temp_file;
+    StudentDetails editStud, editTemp;
+    char line[MAX], matchingLines[MAX];
     char *token;
-    FILE *tempFile;
-    int lineNum = 0, editChoice, found = 0, i, totalMatches = 0;
-	int matchingLines[MAX]; // holds line numbers in the file for filtered classes
-//i track ang actual number didto sa csv then gamiton for comparing sa choice ug ang actual number niya sa csv file
-	    
-	
-	FILE *file = fopen("classes.csv", "r");
-	
-	if (file == NULL) {
-	    perror("Error opening file");
-	    return;
-	}
-	openEdit:
-	// i-Skip ang header
-	fgets(line, MAX, file);
-	
-	int lineCount = 1;
-	showClass(1);//i show ang classes dri
-	
-	while (fgets(line, MAX, file) != NULL) {//ang kani nga loop is to assign data into their designated variable, track ang tinuod nga number niya sa csv
-	    lineCount++;
-	    line[strcspn(line, "\n")] = 0;
-	    token = strtok(line, ",");
-	    if (token != NULL) strcpy(tempClass.courseName, token);
-	     token = strtok(NULL, ",");
-	    if (token != NULL) strcpy(tempClass.courseCode, token);
-	    token = strtok(NULL, ",");
-	    if (token != NULL) strcpy(tempClass.section, token);
-	    token = strtok(NULL, ",");
-	    if (token != NULL) strcpy(tempClass.instructor, token);
-	    token = strtok(NULL, ",");
-	    if (token != NULL) strcpy(tempClass.file, token);
-	
-	    if (strcmp(tempClass.instructor, currentUser) == 0) {
-	        totalMatches++;
-	        matchingLines[totalMatches] = lineCount;
-	    }
-	}
-	fclose(file);
-	
-	if (totalMatches == 0) {
-	    printf("No classes found for user.\n");
-	    getch();
-	    mainMenu();
-	}
+    char tempPath[MAX];  
+    int studEdit;
+    int lineNum = 0, editChoice;
 
-    file = fopen("classes.csv", "r");
+    file = fopen(filePath, "r");
+
     if (file == NULL) {
         perror("Error opening file");
+        return;
+    }
+
+openEdit:
+    // i-Skip ang header
+    fgets(line, MAX, file);
+    int lineCount = 1;
+
+    while (fgets(line, MAX, file) != NULL) {
+        lineCount++;
+        line[strcspn(line, "\n")] = 0;
+        token = strtok(line, ",");
+        if (token != NULL) strcpy(editTemp.FirstName, token);
+        token = strtok(NULL, ",");
+        if (token != NULL) strcpy(editTemp.LastName, token);
+    }
+    fclose(file);
+
+Editing:
+    printf("\nEnter student to edit (number): ");
+    scanf("%d", &studEdit);
+
+    if (studEdit < 1) {
+        printf("Invalid selection.\n");
         getch();
+        goto Editing;
     }
-	
-	 tempFile = fopen("temp.csv", "w");
-    if (tempFile == NULL) {
+
+    file = fopen(filePath, "r");
+    if (file == NULL) {
+        perror("Error opening file for reading");
+        return;
+    }
+
+    char *lastSlash = strrchr(filePath, '\\');
+    if (lastSlash) {
+        size_t dirLen = lastSlash - filePath + 1;
+        strncpy(tempPath, filePath, dirLen);
+        tempPath[dirLen] = '\0'; 
+        strcat(tempPath, "temp.csv"); 
+    } else {
+        strcpy(tempPath, "temp.csv");
+    }
+
+    temp_file = fopen(tempPath, "w");
+    if (temp_file == NULL) {
+        perror("Error opening temporary file for writing");
         fclose(file);
-        perror("Error creating temporary file");
+        return;
     }
-    
-	do {
-	    printf("\nEnter class index to edit (type '0' to return): ");
-	    
-	    if (scanf("%d", &choice) != 1) {
-	        printf("Invalid input. Please enter a number.\n");
-	        
-	        while (getchar() != '\n');
-	        
-	        continue;
-	    }
-	    
-	    if (choice == 0) {
-	        mainMenu();
-	        break;
-	    }
-	
-	    if (choice < 1 || choice > totalMatches) {
-	        printf("Invalid choice. Try again.\n");
-	    }
-	    else
-	    	break;
-		
-	} while (true);
 
-	
-	int targetLine = matchingLines[choice];
-	
-     while (fgets(line, MAX, file) != NULL) {
+    while (fgets(line, MAX, file) != NULL) { 
         lineNum++;
-        line[strcspn(line, "\n")] = '\0'; 
-        
-        if (lineNum == targetLine) {
-            
-            strcpy(editClass.courseName, strtok(line, ","));
-            strcpy(editClass.courseCode, strtok(NULL, ","));
-            strcpy(editClass.section, strtok(NULL, ","));
-            strcpy(editClass.instructor, strtok(NULL, ","));
+        line[strcspn(line, "\n")] = '\0'; // remove newline
 
-            printf("\nEditing: %s - %s - %s\n", editClass.courseName, editClass.courseCode, editClass.section);
-            printf("[1] Edit course name\n[2] Edit course code\n[3] Edit section\n[4] Edit All\n[5] Back\n");
-            do{
-            	printf("Enter choice: ");
-	            scanf(" %d", &editChoice);
-	            getchar();
+        if (lineNum == studEdit) {  
+            strcpy(editStud.studentNumber, strtok(line, ","));
+            strcpy(editStud.FirstName, strtok(NULL, ","));
+            strcpy(editStud.LastName, strtok(NULL, ","));
 
-	            switch (editChoice) {
-	                case 1:
-	                    printf("Enter new course name: ");
-	                    scanf(" %[^\n]", editClass.courseName);
-	                    break;
-	                case 2:
-	                    printf("Enter new course code: ");
-	                    scanf(" %[^\n]", editClass.courseCode);
-	                    break;
-	                case 3:
-	                    printf("Enter new section: ");
-	                    scanf(" %[^\n]", editClass.section);
-	                    break;
-	                case 4:
-	                    printf("Enter new course name: ");
-	                    scanf(" %[^\n]", editClass.courseName);
-	                    printf("Enter new course code: ");
-	                    scanf(" %[^\n]", editClass.courseCode);
-	                    printf("Enter new section: ");
-	                    scanf(" %[^\n]", editClass.section);
-	                    break;
-	            	case 5:{
-	            		mainMenu();
-						break;
-					}
-	                default:
-	                    printf("Invalid choice. No changes made.\n");
-	            }
-	            break;
-			
-			}while(true);
-			    fprintf(tempFile, "%s,%s,%s,%s\n", editClass.courseName, editClass.courseCode, editClass.section, editClass.instructor);
-            	found = 1; 
-		}else {
-            fputs(line, tempFile);
-            fputc('\n', tempFile);
+            printf("\nEditing: %s %s (%s)\n", editStud.FirstName, editStud.LastName, editStud.studentNumber);
+            printf("[1] Edit student number\n[2] Edit first name\n[3] Edit last name\n[4] Edit All\n");
+
+            while (true) {
+                printf("Enter choice: ");
+                scanf("%d", &editChoice);
+                getchar();
+
+                switch (editChoice) {
+                    case 1:
+                        printf("Enter new student number: ");
+                        scanf(" %[^\n]", editStud.studentNumber);
+                        break;
+                    case 2:
+                        printf("Enter new first name: ");
+                        scanf(" %[^\n]", editStud.FirstName);
+                        break;
+                    case 3:
+                        printf("Enter new last name: ");
+                        scanf(" %[^\n]", editStud.LastName);
+                        break;
+                    case 4:
+                        printf("Enter new student number: ");
+                        scanf(" %[^\n]", editStud.studentNumber);
+                        printf("Enter new first name: ");
+                        scanf(" %[^\n]", editStud.FirstName);
+                        printf("Enter new last name: ");
+                        scanf(" %[^\n]", editStud.LastName);
+                        break;
+                    default:
+                        printf("Invalid choice. No changes made.\n");
+                }
+                break;
+            }
+            fprintf(temp_file, "%s,%s,%s\n", editStud.studentNumber, editStud.FirstName, editStud.LastName);
+        } else {
+            fprintf(temp_file, "%s\n", line);
         }
     }
 
     fclose(file);
-    fclose(tempFile);
+    fclose(temp_file);
 
-    if (found) {
-        remove("classes.csv");
-        rename("temp.csv", "classes.csv");
-        printf("Class updated successfully!\n");
+    if (remove(filePath) == 0) {
+        if (rename(tempPath, filePath) != 0) {
+            perror("Error renaming temporary file");
+            return;
+        }
     } else {
-        remove("temp.csv");
+        perror("Error deleting original file");
+        return;
     }
-	
-	lineNum = 0;
-	printf("\n\nContinue Editing?\n[1] Yes\t    [2] No\n");
-	while(true){
-		printf("\n Enter choice: ");
-	    scanf("%d", &choice);
-	    if(choice==1){
-	        system(CLEAR_SCREEN);
-	        goto openEdit;
-	        break;
-	    }
-	    else if(choice ==2){
-	    	system(CLEAR_SCREEN);
-    		mainMenu();
-    		break;
-		}
-	    else
-	    	printf("Enter a valid choice.\n");
-	}
-//	
-//	while(true){
-//		printf("Enter y/yes || n/no: ");
-//		scanf(" %s", dec);
-//		fgets(dec, sizeof(dec), stdin);
-//
-//		  while (dec[i]) {
-//		    dec[i] = tolower(dec[i]);
-//		    i++;
-//		  }
-//	
-//			if (strcmp(dec, "y") == 0 || strcmp(dec, "yes") == 0) {
-//				choice=0;	
-//				openClass();                                      
-//	            mainMenu();
-//	            break;
-//	        }
-//			else{
-//				printf("Enter a valid choice.\n");
-//			}
-//		}
-//	
-	getch();
+
+    printf("\nStudent %d updated successfully.\n", studEdit);
+    getch();
+    system(CLEAR_SCREEN);
+
+    FILE *studentFile = fopen(filePath, "r");
+    if (!studentFile) {
+        perror("Error opening class student file");
+        getch();
+        return;
+    }
+
+    list->head = NULL;
+    list->tail = NULL;
+    if (!list_from_csv(list, studentFile)) {
+        fclose(studentFile);
+        return;
+    }
+
+    fclose(studentFile);
+
+    printf("\n Updated List:\n");
+    prn_list(list);
+    del_list(list);
+    lineNum = 0;
+
+    printf("\n\nEdit more? \n[1] Yes\n[2] No");
+    while (true) {
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        if (choice == 1) {
+            goto Editing;
+        } else if (choice == 2) {
+            showClass(1);
+        } else {
+            printf("Enter a valid choice.\n");
+        }
+    }
 }
+
 
 
 void addStudent(char filePath[MAX]){
